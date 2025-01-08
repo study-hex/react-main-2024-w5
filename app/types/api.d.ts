@@ -10,6 +10,7 @@ type APIResponse<T> = {
     data: T;
     status: number;
     message: string;
+    [key: string]: unknown;
 }
 
 type EndpointConfig = {
