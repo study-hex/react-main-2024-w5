@@ -6,8 +6,9 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-
 import type { Route } from "./+types/root";
+import { Toaster } from "@/components/ui/toaster";
+
 import stylesheet from "./app.css?url";
 
 export const links: Route.LinksFunction = () => [
@@ -33,8 +34,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
+
       <body>
         {children}
+        <Toaster />
         <ScrollRestoration />
         <Scripts />
       </body>
