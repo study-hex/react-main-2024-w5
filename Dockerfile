@@ -1,26 +1,25 @@
-FROM node:20-alpine AS dependencies-env
+# 建置階段
+FROM node:20-alpine AS build
 RUN npm i -g pnpm
-COPY . /app
-
-FROM dependencies-env AS development-dependencies-env
-COPY ./package.json pnpm-lock.yaml /app/
 WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm i --frozen-lockfile
-
-FROM dependencies-env AS production-dependencies-env
-COPY ./package.json pnpm-lock.yaml /app/
-WORKDIR /app
-RUN pnpm i --prod --frozen-lockfile
-
-FROM dependencies-env AS build-env
-COPY ./package.json pnpm-lock.yaml /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
+COPY . .
+# 設定建置時的環境變數
+ARG VITE_APP_API_URL
+ARG VITE_APP_API_PATH
+ENV VITE_APP_API_URL=${VITE_APP_API_URL}
+ENV VITE_APP_API_PATH=${VITE_APP_API_PATH}
 RUN pnpm build
 
-FROM dependencies-env
-COPY ./package.json pnpm-lock.yaml /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
-WORKDIR /app
-CMD ["pnpm", "start"]
+# 運行階段
+FROM nginx:alpine
+# 複製檔案
+COPY --from=build /app/build/client /usr/share/nginx/html/
+# 複製 nginx 配置模板
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+# 設定運行時的環境變數
+ENV VITE_APP_API_URL=${VITE_APP_API_URL}
+ENV VITE_APP_API_PATH=${VITE_APP_API_PATH}
+# 使用 envsubst 來替換環境變數
+CMD ["/bin/sh", "-c", "envsubst '${VITE_APP_API_URL} ${VITE_APP_API_PATH}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
