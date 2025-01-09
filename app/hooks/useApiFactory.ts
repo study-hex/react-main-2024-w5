@@ -50,7 +50,12 @@ export const createApiHooks = <T extends EndpointConfig>(endpoints: T): HooksTyp
       return (params?: GetParams, swrConfig?: SWRConfiguration) => {
         return useSWR<APIResponse<TData>>(
           params ? [path, params] : path,
-          async () => fetcher<TData>(path, { method: 'GET', params }),
+          async (url) => {
+            return fetcher(url, {
+              method,
+              params: params,
+            });
+          },
           swrConfig
         );
       };
@@ -77,13 +82,12 @@ export const createApiHooks = <T extends EndpointConfig>(endpoints: T): HooksTyp
         MutationParams<TData>
       >(
         path,
-        async (url: string, { arg }: { arg?: MutationParams<TData> }) => {
-          return fetcher<TData>(url, {
+        async (url: string, { arg }: { arg?: MutationParams<TData> }) =>
+          fetcher(url, {
             method,
             params: arg?.params,
             data: arg?.data,
-          });
-        },
+          }),
         mutationConfig
       );
 

@@ -1,7 +1,7 @@
 const API_PREFIX = '/v2';
 
 const createUrl = (path: string, params?: Record<string, string | number>) => {
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const normalizedPath = path[0].startsWith('/') ? path[0] : `/${path[0]}`;
   const fullPath = `${API_PREFIX}${normalizedPath}`;
 
   if (!params) {
@@ -26,6 +26,7 @@ export const fetcher = async <T>(
     headers: {
       'Content-Type': 'application/json',
       ...headers,
+      ...(Array.isArray(path) ? path[1]?.headers : {}),
     },
     body: data ? JSON.stringify(data) : undefined,
     ...config,

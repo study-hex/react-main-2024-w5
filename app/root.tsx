@@ -11,6 +11,9 @@ import { Toaster } from "@/components/ui/toaster";
 
 import stylesheet from "./app.css?url";
 
+import TokenProvider from "./providers/TokenProvider";
+import AuthProvider from "./providers/AuthProvider";
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -36,7 +39,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
 
       <body>
-        {children}
+        <TokenProvider>
+          <AuthProvider>
+            <>{children}</>
+          </AuthProvider>
+        </TokenProvider>
+
         <Toaster />
         <ScrollRestoration />
         <Scripts />

@@ -19,6 +19,7 @@ import { Lock, Mail, Eye, EyeOff, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useToggle } from "@/hooks/useToggle";
 
+import { useAuth } from "@/providers/AuthProvider";
 import { useSignin } from "@/service/auth";
 
 import { loginSchema, defaultValues } from "./data/schema";
@@ -26,6 +27,8 @@ import { loginSchema, defaultValues } from "./data/schema";
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
+  const { handleLogin } = useAuth();
+
   const { toast } = useToast();
   const { open: isPasswordVisibility, toggle: togglePasswordVisibility } =
     useToggle(false);
@@ -46,9 +49,10 @@ export default function Login() {
     try {
       const response = await trigger({ data });
       const { token, expired } = response;
-      document.cookie = `hexToken=${token};expires=${new Date(
-        String(expired)
-      ).toUTCString()};`;
+      handleLogin({
+        token: String(token),
+        expired: Number(expired),
+      });
 
       toast({
         title: "登入成功",
