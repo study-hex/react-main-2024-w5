@@ -1,4 +1,5 @@
 import Login from "~/features/login";
+import Product from "~/features/product";
 
 import { useAuth } from "~/providers/AuthProvider";
 
@@ -9,15 +10,5 @@ export default function Welcome() {
     return <div>Loading...</div>;
   }
 
-  return (
-    <>
-      {isLogin ? (
-        <div>
-          <h1>Welcome to the app</h1>
-        </div>
-      ) : (
-        <Login />
-      )}
-    </>
-  );
+  return <>{isLogin ? <Product /> : <Login />}</>;
 }
