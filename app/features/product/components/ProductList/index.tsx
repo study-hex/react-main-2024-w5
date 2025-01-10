@@ -33,8 +33,8 @@ export default function ProductList(props: ProductListPropsType) {
           <TableHeader className="bg-amber-50/50">
             <TableRow>
               <TableHead className="px-4 text-amber-800">產品名稱</TableHead>
-              <TableHead className="text-center text-amber-800">原價</TableHead>
-              <TableHead className="text-center text-amber-800">售價</TableHead>
+              <TableHead className="text-right text-amber-800">原價</TableHead>
+              <TableHead className="text-right text-amber-800">售價</TableHead>
               <TableHead className="text-center text-amber-800">狀態</TableHead>
               <TableHead className="text-center text-amber-800">操作</TableHead>
             </TableRow>
@@ -46,11 +46,11 @@ export default function ProductList(props: ProductListPropsType) {
                 <TableCell className="px-4 text-amber-900">
                   {item.title}
                 </TableCell>
-                <TableCell className="text-center text-amber-600">
-                  <del>NT$ {item.origin_price}</del>
+                <TableCell className="text-right text-amber-600">
+                  <del>NT$ {new Intl.NumberFormat().format(item.origin_price)}</del>
                 </TableCell>
-                <TableCell className="text-center text-red-700 font-semibold">
-                  NT$ {item.price}
+                <TableCell className="text-right text-red-700 font-semibold">
+                  NT$ {new Intl.NumberFormat().format(item.price)}
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge
