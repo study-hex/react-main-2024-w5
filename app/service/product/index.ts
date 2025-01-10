@@ -6,7 +6,11 @@ const productApiConfig = {
     useProductsAll: {
         path: `/api/${API_PATH}/admin/products/all`,
         method: 'GET',
+    },
+    useDeleteProduct: {
+        path: `/api/${API_PATH}/admin/product/:id`,
+        method: 'DELETE',
     }
 } as const;
 
-export const { useProductsAll } = createApiHooks(productApiConfig);
+export const { useProductsAll, useDeleteProduct } = createApiHooks(productApiConfig);
