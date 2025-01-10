@@ -4,6 +4,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from "react";
 
 import { useCheckUser } from "~/service/auth";
@@ -22,7 +23,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({
   isLogin: false,
   isLoading: false,
-  handleLogin: () => {},
+  handleLogin: () => { },
 });
 
 export default function AuthProvider({
@@ -33,6 +34,23 @@ export default function AuthProvider({
   const [isLogin, setIsLogin] = useState<boolean>(false);
 
   const { trigger, isMutating } = useCheckUser();
+
+  const handleLogin = useCallback(
+    (response: LoginResponseType) => {
+      setIsLogin(true);
+
+      const { token, expired } = response;
+      document.cookie = `hexToken=${token};expires=${new Date(
+        expired
+      ).toUTCString()};`;
+    },
+    [setIsLogin]
+  );
+
+  const handleLogout = useCallback(() => {
+    document.cookie = 'hexToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    setIsLogin(false);
+  }, [setIsLogin]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -53,12 +71,12 @@ export default function AuthProvider({
         if (response.success) {
           setIsLogin(true);
         } else {
-          setIsLogin(false);
+          handleLogout();
         }
       } catch (error) {
         if (!abortController.signal.aborted) {
           console.log("檢查使用者狀態時發生錯誤:", error);
-          setIsLogin(false);
+          handleLogout();
         }
       }
     };
@@ -68,24 +86,21 @@ export default function AuthProvider({
     return () => {
       abortController.abort();
     };
-  }, [trigger]);
+  }, []);
 
-  const handleLogin = useCallback(
-    (response: LoginResponseType) => {
-      setIsLogin(true);
 
-      const { token, expired } = response;
-      document.cookie = `hexToken=${token};expires=${new Date(
-        expired
-      ).toUTCString()};`;
-    },
-    [setIsLogin]
+
+  const contextValue = useMemo(
+    () => ({
+      isLogin,
+      isLoading: isMutating,
+      handleLogin,
+    }),
+    [isLogin, isMutating, handleLogin]
   );
 
   return (
-    <AuthContext.Provider
-      value={{ isLogin, isLoading: isMutating, handleLogin }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
