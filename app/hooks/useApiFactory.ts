@@ -1,10 +1,11 @@
 import useSWR, { type SWRConfiguration, type SWRResponse } from 'swr';
-import useSWRMutation, { type SWRMutationConfiguration } from 'swr/mutation';
+import useSWRMutation from 'swr/mutation';
 
 import { fetcher } from '~/utils/fetcher';
 
 type GetParams = Record<string, string | number>;
 type MutationParams<T> = {
+  id?: string | number;
   params?: GetParams;
   data?: T;
 };
@@ -16,12 +17,7 @@ type HooksType<T extends EndpointConfig> = {
     swrConfig?: SWRConfiguration
   ) => SWRResponse<APIResponse<TData>>
   : <TData extends Record<string, unknown> | undefined>(
-    mutationConfig?: SWRMutationConfiguration<
-      APIResponse<TData>,
-      Error,
-      string,
-      MutationParams<TData>
-    >
+    config?: MutationParams<TData>
   ) => MutationResult<TData>;
 };
 
@@ -62,12 +58,7 @@ export const createApiHooks = <T extends EndpointConfig>(endpoints: T): HooksTyp
     }
 
     return (
-      mutationConfig?: SWRMutationConfiguration<
-        APIResponse<TData>,
-        Error,
-        string,
-        MutationParams<TData>
-      >
+      config?: MutationParams<TData>
     ) => {
       const {
         trigger,
@@ -85,20 +76,22 @@ export const createApiHooks = <T extends EndpointConfig>(endpoints: T): HooksTyp
         async (url: string, { arg }: { arg?: MutationParams<TData> }) =>
           fetcher(url, {
             method,
-            params: arg?.params,
+            params: {
+              ...(config?.id ? { id: config.id } : {}),
+              ...arg?.params
+            },
             data: arg?.data,
           }),
-        mutationConfig
       );
 
       return {
-        trigger,
-        mutateAsync: (config?: MutationParams<TData>) => {
+        trigger: (arg?: MutationParams<TData>) => trigger(arg ?? { params: {}, data: undefined }),
+        mutateAsync: (mutationConfig?: MutationParams<TData>) => {
           const defaultConfig: MutationParams<TData> = {
             params: {},
             data: undefined,
           };
-          return trigger(config ?? defaultConfig);
+          return trigger(mutationConfig ?? defaultConfig);
         },
         data,
         error,

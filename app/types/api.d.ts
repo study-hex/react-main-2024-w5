@@ -1,10 +1,12 @@
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
-type RequestConfig = RequestInit & {
+type RequestConfig = {
+    method?: string;
     params?: Record<string, string | number>;
-    data?: Record<string, unknown>;
+    data?: unknown;
     headers?: Record<string, string>;
-}
+    [key: string]: unknown;
+};
 
 type APIResponse<T> = {
     data: T;
