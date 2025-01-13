@@ -39,13 +39,13 @@ export default function ProductDeleteButton(
 
   return (
     <Button
-      variant="outline"
+      variant="ghost"
       size="sm"
-      className="rounded-full bg-red-700 text-red-50 hover:bg-red-800 border-0"
+      className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-700 text-red-600"
       onClick={handleDelete}
       disabled={isMutating}
     >
-      <Trash2Icon className="w-4 h-4" />
+      <Trash2Icon className="h-4 w-4" />
     </Button>
   );
 }

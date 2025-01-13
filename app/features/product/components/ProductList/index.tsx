@@ -13,6 +13,7 @@ import { InfoIcon } from "lucide-react";
 
 import { type Product } from "~/features/product";
 import ProductDeleteButton from "../ProductDeleteButton";
+import ProductFormDialog from "../ProductFormDialog";
 
 type ProductListPropsType = {
   products: Product[];
@@ -47,7 +48,9 @@ export default function ProductList(props: ProductListPropsType) {
                   {item.title}
                 </TableCell>
                 <TableCell className="text-right text-amber-600">
-                  <del>NT$ {new Intl.NumberFormat().format(item.origin_price)}</del>
+                  <del>
+                    NT$ {new Intl.NumberFormat().format(item.origin_price)}
+                  </del>
                 </TableCell>
                 <TableCell className="text-right text-red-700 font-semibold">
                   NT$ {new Intl.NumberFormat().format(item.price)}
@@ -65,14 +68,16 @@ export default function ProductList(props: ProductListPropsType) {
                   </Badge>
                 </TableCell>
 
-                <TableCell className="text-center flex justify-center items-center gap-2">
+                <TableCell className="text-center flex justify-center items-center gap-1">
+                  <ProductFormDialog productId={item.id} />
+
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="rounded-full bg-amber-700 text-amber-50 hover:bg-amber-800 border-0"
+                    className="h-8 w-8 p-0 hover:bg-amber-100 hover:text-amber-900 text-amber-700"
                     onClick={() => onSelectProductId(item.id)}
                   >
-                    <InfoIcon className="w-4 h-4" />
+                    <InfoIcon className="h-4 w-4" />
                   </Button>
 
                   <ProductDeleteButton productId={item.id} />
