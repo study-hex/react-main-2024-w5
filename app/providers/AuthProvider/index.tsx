@@ -2,7 +2,6 @@ import {
   createContext,
   useContext,
   useState,
-  useEffect,
   useCallback,
   useMemo,
 } from "react";
@@ -23,86 +22,75 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({
   isLogin: false,
   isLoading: false,
-  handleLogin: () => { },
+  handleLogin: () => {},
 });
+
+const getCookieToken = () => {
+  // 檢查是否在瀏覽器環境
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("hexToken="))
+    ?.split("=")[1];
+};
 
 export default function AuthProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [isLogin, setIsLogin] = useState<boolean>(false);
-
   const { trigger, isMutating } = useCheckUser();
 
-  const handleLogin = useCallback(
-    (response: LoginResponseType) => {
-      setIsLogin(true);
+  const initialLoginState = async (): Promise<boolean> => {
+    const token = getCookieToken();
+    if (!token) {
+      return false;
+    }
 
-      const { token, expired } = response;
-      document.cookie = `hexToken=${token};expires=${new Date(
-        expired
-      ).toUTCString()};`;
-    },
-    [setIsLogin]
-  );
+    try {
+      const response = await trigger();
+      return Boolean(response.success);
+    } catch (error) {
+      console.log("檢查使用者狀態時發生錯誤:", error);
+      return false;
+    }
+  };
 
-  const handleLogout = useCallback(() => {
-    document.cookie = 'hexToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-    setIsLogin(false);
-  }, [setIsLogin]);
+  const [isLogin, setIsLogin] = useState(() => {
+    initialLoginState().then((result: boolean) => setIsLogin(result));
+    // 預設值
+    return false;
+  });
 
-  useEffect(() => {
-    const abortController = new AbortController();
+  const handleLogin = useCallback((response: LoginResponseType) => {
+    setIsLogin(true);
 
-    const checkUserStatus = async () => {
-      const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("hexToken="))
-        ?.split("=")[1];
-
-      if (!token) {
-        setIsLogin(false);
-        return;
-      }
-
-      try {
-        const response = await trigger();
-        if (response.success) {
-          setIsLogin(true);
-        } else {
-          handleLogout();
-        }
-      } catch (error) {
-        if (!abortController.signal.aborted) {
-          console.log("檢查使用者狀態時發生錯誤:", error);
-          handleLogout();
-        }
-      }
-    };
-
-    checkUserStatus();
-
-    return () => {
-      abortController.abort();
-    };
+    const { token, expired } = response;
+    document.cookie = `hexToken=${token};expires=${new Date(
+      expired
+    ).toUTCString()};`;
   }, []);
 
-
+  const handleLogout = useCallback(() => {
+    document.cookie = "hexToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    setIsLogin(false);
+  }, []);
 
   const contextValue = useMemo(
     () => ({
       isLogin,
       isLoading: isMutating,
       handleLogin,
+      handleLogout,
     }),
-    [isLogin, isMutating, handleLogin]
+    [isLogin, isMutating, handleLogin, handleLogout]
   );
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 
