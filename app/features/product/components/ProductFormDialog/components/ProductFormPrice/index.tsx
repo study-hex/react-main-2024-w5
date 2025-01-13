@@ -69,7 +69,9 @@ export default function ProductFormPrice() {
         control={control}
         render={({ field }) => (
           <div className="space-y-2">
-            <Label className="text-amber-800">單位</Label>
+            <Label className="text-amber-800">
+              單位 <span className="text-red-500">*</span>
+            </Label>
             <Input
               placeholder="件/個/組"
               className="border-amber-200 focus:border-amber-400"
