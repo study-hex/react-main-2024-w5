@@ -1,3 +1,4 @@
+import { startTransition } from "react";
 import { FormProvider, Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { mutate } from "swr";
@@ -15,13 +16,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
-import { PencilIcon, PackageSearch } from "lucide-react";
+import { PencilIcon, PackageSearch, PlusCircle } from "lucide-react";
 
 import FormSection from "@/components/FormSection";
 
 import { useToast } from "@/hooks/use-toast";
 import { useToggle } from "@/hooks/useToggle";
-import { useProductsAll, useUpdateProduct } from "@/service/product";
+import {
+  useProductsAll,
+  useUpdateProduct,
+  useCreateProduct,
+} from "@/service/product";
 import { type ProductsType, type Product } from "@/features/product";
 
 import { productSchema, defaultValues } from "./data/schema";
@@ -42,6 +47,9 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
 
   const { data, isLoading } = useProductsAll<ProductsType>();
   const { trigger: triggerUpdate } = useUpdateProduct({ id: productId });
+  const { trigger: triggerCreate } = useCreateProduct();
+
+  const isEditing = Boolean(productId);
 
   const selectedProduct =
     data?.products &&
@@ -49,7 +57,7 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
 
   const methods = useForm({
     resolver: zodResolver(productSchema),
-    values: productId
+    values: isEditing
       ? {
           ...defaultValues,
           ...selectedProduct,
@@ -64,10 +72,7 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
     formState: { isSubmitting },
     control,
     reset,
-    watch,
   } = methods;
-
-  console.log(watch("is_enabled"));
 
   const onSubmit = async (data: Product) => {
     try {
@@ -76,13 +81,13 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
           ...data,
         },
       };
-      await triggerUpdate({ data: payload });
-      reset();
-      toggleClose();
+      const result = await (isEditing
+        ? triggerUpdate({ data: payload })
+        : triggerCreate({ data: payload }));
 
       toast({
         title: "更新成功",
-        description: "產品資訊已更新",
+        description: result.message,
         variant: "default",
       });
 
@@ -90,6 +95,11 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
         if (key && Array.isArray(key)) {
           return key[0].includes("/admin/product");
         }
+      });
+
+      startTransition(() => {
+        reset();
+        toggleClose();
       });
     } catch (error) {
       toast({
@@ -108,13 +118,24 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
   return (
     <Dialog open={open} onOpenChange={toggleOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 hover:bg-amber-100 hover:text-amber-900 text-amber-700"
-        >
-          <PencilIcon className="h-4 w-4" />
-        </Button>
+        {isEditing ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 hover:bg-amber-100 hover:text-amber-900 text-amber-700"
+          >
+            <PencilIcon className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            size="sm"
+            className="bg-amber-500 text-white hover:bg-amber-600 transition-colors"
+          >
+            <PlusCircle className="mr-1 h-4 w-4" />
+            新增
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="max-w-4xl bg-white/95 backdrop-blur-sm border-amber-200">

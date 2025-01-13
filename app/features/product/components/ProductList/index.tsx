@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+
 import { InfoIcon } from "lucide-react";
 
 import { type Product } from "~/features/product";
@@ -25,8 +26,9 @@ export default function ProductList(props: ProductListPropsType) {
 
   return (
     <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
-      <CardHeader className="bg-amber-100/50">
+      <CardHeader className="flex flex-row items-center justify-between py-3 bg-amber-100/50">
         <CardTitle className="text-amber-900 font-serif">產品列表</CardTitle>
+        <ProductFormDialog />
       </CardHeader>
 
       <CardContent className="p-0">
