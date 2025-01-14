@@ -1,6 +1,5 @@
+import { API_PATH } from "~/constants";
 import { createApiHooks } from "~/hooks/useApiFactory";
-
-const API_PATH = import.meta.env.VITE_APP_API_PATH;
 
 const productApiConfig = {
     useProductsAll: {
