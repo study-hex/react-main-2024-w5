@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Controller, useFormContext, useFieldArray } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -8,80 +7,27 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { Plus, Minus, ImageIcon, X } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 
-type ImagePreviewPropsType = {
-  url: string;
-  onRemove?: () => void;
-  showRemove?: boolean;
-};
-
-export function ImagePreview({
-  url,
-  onRemove,
-  showRemove = false,
-}: ImagePreviewPropsType) {
-  const [isError, setIsError] = useState(false);
-
-  if (!url) {
-    return (
-      <Card className="relative w-full h-48 bg-amber-50/50">
-        <CardContent className="flex items-center justify-center h-full p-4">
-          <div className="text-center">
-            <ImageIcon className="mx-auto h-12 w-12 text-amber-400" />
-            <p className="mt-2 text-sm text-amber-600">尚未輸入圖片網址</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Card className="relative w-full h-48 bg-red-50">
-        <CardContent className="flex items-center justify-center h-full p-4">
-          <div className="text-center">
-            <ImageIcon className="mx-auto h-12 w-12 text-red-400" />
-            <p className="mt-2 text-sm text-red-600">圖片載入失敗</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="relative w-full h-48 overflow-hidden group">
-      <img
-        src={url}
-        alt="Preview"
-        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-        onError={() => setIsError(true)}
-      />
-      {showRemove && onRemove && (
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute top-2 right-2 bg-white/90 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={onRemove}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
-    </Card>
-  );
-}
+import { useImageUpload } from "~/hooks/useImageUpload";
+import ImagePreview from "../ImagePreview";
 
 export default function ImageUrlInputs() {
   const {
     control,
     formState: { errors },
     watch,
+    setValue,
   } = useFormContext();
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "imagesUrl",
   });
+
+  const { handleUpload: handleImageUpload } = useImageUpload((imageUrl) =>
+    setValue(`imagesUrl.${fields.length - 1}`, imageUrl)
+  );
 
   return (
     <div className="space-y-6">
@@ -151,6 +97,7 @@ export default function ImageUrlInputs() {
                     url={watch(`imagesUrl.${index}`)}
                     onRemove={() => remove(index)}
                     showRemove={true}
+                    onFileSelect={(file) => handleImageUpload(file)}
                   />
                 </CardContent>
               </Card>

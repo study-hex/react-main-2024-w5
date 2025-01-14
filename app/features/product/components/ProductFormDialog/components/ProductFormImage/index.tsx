@@ -4,15 +4,21 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-import ImageUrlInputs, {
-  ImagePreview,
-} from "@/features/product/components/ImageUrlInputs";
+import ImageUrlInputs from "@/features/product/components/ImageUrlInputs";
+import ImagePreview from "@/features/product/components/ImagePreview";
+
+import { useImageUpload } from "~/hooks/useImageUpload";
 
 export default function ProductFormImage() {
+  const { handleUpload } = useImageUpload((imageUrl) =>
+    setValue("imageUrl", imageUrl)
+  );
+
   const {
     control,
     formState: { errors },
     watch,
+    setValue,
   } = useFormContext();
 
   return (
@@ -44,7 +50,12 @@ export default function ProductFormImage() {
             </div>
           )}
         />
-        <ImagePreview url={watch("imageUrl")} />
+        <ImagePreview
+          url={watch("imageUrl")}
+          onRemove={() => setValue("imageUrl", "")}
+          showRemove={true}
+          onFileSelect={handleUpload}
+        />
       </div>
 
       <ImageUrlInputs />
