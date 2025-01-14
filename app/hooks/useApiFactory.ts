@@ -4,10 +4,12 @@ import useSWRMutation from 'swr/mutation';
 import { fetcher } from '~/utils/fetcher';
 
 type GetParams = Record<string, string | number>;
+
 type MutationParams<T> = {
   id?: string | number;
   params?: GetParams;
   data?: T;
+  formData?: FormData;
 };
 
 type HooksType<T extends EndpointConfig> = {
@@ -81,15 +83,18 @@ export const createApiHooks = <T extends EndpointConfig>(endpoints: T): HooksTyp
               ...arg?.params
             },
             data: arg?.data,
+            formData: arg?.formData,
           }),
       );
 
       return {
-        trigger: (arg?: MutationParams<TData>) => trigger(arg ?? { params: {}, data: undefined }),
+        trigger: (arg?: MutationParams<TData>) =>
+          trigger(arg ?? { params: {}, data: undefined, formData: undefined }),
         mutateAsync: (mutationConfig?: MutationParams<TData>) => {
           const defaultConfig: MutationParams<TData> = {
             params: {},
             data: undefined,
+            formData: undefined,
           };
           return trigger(mutationConfig ?? defaultConfig);
         },

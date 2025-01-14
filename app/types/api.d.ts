@@ -3,7 +3,8 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 type RequestConfig = {
     method?: string;
     params?: Record<string, string | number>;
-    data?: unknown;
+    data?: Record<string, unknown>;
+    formData?: FormData;
     headers?: Record<string, string>;
     [key: string]: unknown;
 };

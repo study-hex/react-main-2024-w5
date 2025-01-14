@@ -29,18 +29,29 @@ const createUrl = (path: string | [string, ...unknown[]], params?: Record<string
 
 export const fetcher = async <T>(
   path: string | [string, ...unknown[]],
-  { method = 'GET', params, data, headers = {}, ...config }: RequestConfig = {}
+  { method = 'GET', params, data, formData, headers = {}, ...config }: RequestConfig = {}
 ): Promise<APIResponse<T>> => {
   const finalUrl = createUrl(path, params);
 
-  const response = await fetch(finalUrl, {
-    method,
-    headers: {
+  // 如果有 formData，不設置 Content-Type，讓瀏覽器自動設置
+  const requestHeaders = formData
+    ? {
+      ...headers, ...(Array.isArray(path) && typeof path[1] === 'object' && path[1]
+        ? (path[1] as { headers?: Record<string, string> }).headers || {}
+        : {}),
+    }
+    : {
       'Content-Type': 'application/json',
       ...headers,
-      ...(Array.isArray(path) && typeof path[1] === 'object' && path[1] ? (path[1] as { headers?: Record<string, string> }).headers || {} : {}),
-    },
-    body: data ? JSON.stringify(data) : undefined,
+      ...(Array.isArray(path) && typeof path[1] === 'object' && path[1]
+        ? (path[1] as { headers?: Record<string, string> }).headers || {}
+        : {}),
+    };
+
+  const response = await fetch(finalUrl, {
+    method,
+    headers: requestHeaders,
+    body: formData || (data ? JSON.stringify(data) : undefined),
     ...config,
   });
 
