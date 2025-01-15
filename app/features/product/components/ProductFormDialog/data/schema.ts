@@ -20,7 +20,13 @@ const stringToNumber = (value: string) => {
     return isNaN(number) ? 0 : number;
 };
 
-const priceSchema = z.string().transform(stringToNumber).pipe(z.number().min(0, "不能小於 0"));
+const priceSchema = z.union([
+    z.string()
+        .transform(stringToNumber)
+        .pipe(z.number().min(0, "不能小於 0")),
+    z.number().min(0, "不能小於 0")
+])
+    .transform(num => Math.round(num * 100) / 100);
 
 export const productSchema = z.object({
     title: z.string().min(1, "必填"),

@@ -17,15 +17,22 @@ export default function ProductFormPrice() {
       <Controller
         name="origin_price"
         control={control}
-        render={({ field }) => (
+        render={({ field: { onChange, ...field } }) => (
           <div className="space-y-2">
             <Label className="text-amber-800">原始價格</Label>
             <div className="relative">
               <DollarSign className="absolute left-3 top-2.5 h-5 w-5 text-amber-600" />
               <Input
+                {...field}
+                type="number"
                 placeholder="0.00"
                 className="pl-10 border-amber-200 focus:border-amber-400"
-                {...field}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "e" || e.key === "E" || e.key === "+") {
+                    e.preventDefault();
+                  }
+                }}
               />
             </div>
             {errors.origin_price && (
@@ -41,7 +48,7 @@ export default function ProductFormPrice() {
       <Controller
         name="price"
         control={control}
-        render={({ field }) => (
+        render={({ field: { onChange, ...field } }) => (
           <div className="space-y-2">
             <Label className="text-amber-800">
               售價 <span className="text-red-500">*</span>
@@ -49,9 +56,16 @@ export default function ProductFormPrice() {
             <div className="relative">
               <DollarSign className="absolute left-3 top-2.5 h-5 w-5 text-amber-600" />
               <Input
+                {...field}
+                type="number"
                 placeholder="0.00"
                 className="pl-10 border-amber-200 focus:border-amber-400"
-                {...field}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "e" || e.key === "E" || e.key === "+") {
+                    e.preventDefault();
+                  }
+                }}
               />
             </div>
             {errors.price && (
