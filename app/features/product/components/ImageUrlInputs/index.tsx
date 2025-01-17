@@ -23,6 +23,8 @@ export default function ImageUrlInputs() {
   const { fields, append, remove } = useFieldArray({
     control,
     name: "imagesUrl",
+    // #NOTES: 避免新增產品後，再次點選新增時，多圖欄位會跑出前次的資料
+    shouldUnregister: true,
   });
 
   const { handleUpload: handleImageUpload } = useImageUpload((imageUrl) =>
