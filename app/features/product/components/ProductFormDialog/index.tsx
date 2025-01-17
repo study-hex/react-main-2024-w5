@@ -43,7 +43,7 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
   const { productId } = props;
 
   const { toast } = useToast();
-  const { open, toggleOpen, toggleClose } = useToggle(false);
+  const { open, toggle, toggleClose } = useToggle(false);
 
   const { data, isLoading } = useProductsAll<ProductsType>();
   const { trigger: triggerUpdate } = useUpdateProduct({ id: productId });
@@ -116,7 +116,7 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={toggleOpen}>
+    <Dialog open={open} onOpenChange={toggle}>
       <DialogTrigger asChild>
         {isEditing ? (
           <Button
