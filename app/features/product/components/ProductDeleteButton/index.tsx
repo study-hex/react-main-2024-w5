@@ -1,9 +1,13 @@
+import { startTransition } from "react";
 import { mutate } from "swr";
 
 import { Button } from "@/components/ui/button";
 import { Trash2Icon } from "lucide-react";
 
+import ConfirmDialog from "@/components/ConfirmDialog";
+
 import { useToast } from "@/hooks/use-toast";
+import { useToggle } from "@/hooks/useToggle";
 
 import { useDeleteProduct } from "@/service/product";
 
@@ -17,13 +21,20 @@ export default function ProductDeleteButton(
   const { productId } = props;
 
   const { toast } = useToast();
+  const {
+    open: isLoading,
+    toggleOpen: openLoading,
+    toggleClose: closeLoading,
+  } = useToggle(false);
 
   const { trigger: triggerDelete, isMutating } = useDeleteProduct({
     id: productId,
   });
 
   const handleDelete = async () => {
+    openLoading();
     await triggerDelete();
+
     toast({
       title: "刪除成功",
       description: "產品已經被刪除",
@@ -35,17 +46,24 @@ export default function ProductDeleteButton(
         return key[0].includes("/admin/product");
       }
     });
+    startTransition(() => {
+      closeLoading();
+    });
   };
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-700 text-red-600"
-      onClick={handleDelete}
-      disabled={isMutating}
-    >
-      <Trash2Icon className="h-4 w-4" />
-    </Button>
+    <ConfirmDialog
+      onConfirm={handleDelete}
+      renderButton={
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-700 text-red-600"
+          disabled={isMutating || isLoading}
+        >
+          <Trash2Icon className="h-4 w-4" />
+        </Button>
+      }
+    />
   );
 }
