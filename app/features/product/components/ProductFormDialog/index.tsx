@@ -74,6 +74,13 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
     reset,
   } = methods;
 
+  const handleDialogClose = () => {
+    reset({
+      ...defaultValues,
+    });
+    toggleClose();
+  };
+
   const onSubmit = async (data: Product) => {
     try {
       const payload = {
@@ -98,8 +105,7 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
       });
 
       startTransition(() => {
-        reset();
-        toggleClose();
+        handleDialogClose();
       });
     } catch (error) {
       toast({
@@ -116,7 +122,16 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={toggle}>
+    <Dialog
+      open={open}
+      // #NOTES: 會同時用來處理關閉視窗的按鈕
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          return handleDialogClose();
+        }
+        return toggle();
+      }}
+    >
       <DialogTrigger asChild>
         {isEditing ? (
           <Button
@@ -193,10 +208,7 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => {
-                reset();
-                toggleClose();
-              }}
+              onClick={handleDialogClose}
               className="border-amber-200 text-amber-800 hover:bg-amber-50"
             >
               取消
