@@ -12,6 +12,7 @@ export type Product = {
   imageUrl: string;
   description: string;
   content: string;
+  notes: string;
   origin_price: number;
   price: number;
   unit: string;

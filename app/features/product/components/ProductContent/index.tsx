@@ -58,6 +58,15 @@ export default function ProductContent(props: ProductContentPropsType) {
               <small className="text-amber-600 ml-2">/ {product.unit}</small>
             </div>
 
+            {product.notes && (
+              <div className="mb-4">
+                <h5 className="text-sm font-semibold mb-2 text-amber-800">
+                  備註
+                </h5>
+                <p className="text-amber-700">{product.notes}</p>
+              </div>
+            )}
+
             {product.imagesUrl?.length > 0 && (
               <div>
                 <h4 className="text-sm font-semibold mb-3 text-amber-800 hidden">

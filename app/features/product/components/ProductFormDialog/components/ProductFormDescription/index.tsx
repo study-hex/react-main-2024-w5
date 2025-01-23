@@ -54,6 +54,27 @@ export default function ProductFormDescription() {
           </div>
         )}
       />
+      <Controller
+        name="notes"
+        control={control}
+        render={({ field }) => (
+          <div className="space-y-2">
+            <Label className="text-amber-800">備註</Label>
+            <Input
+              placeholder="輸入備註"
+              className="border-amber-200 focus:border-amber-400"
+              {...field}
+            />
+            {errors.notes && (
+              <Alert variant="destructive" className="bg-red-50 border-red-200">
+                <AlertDescription>
+                  {String(errors.notes.message)}
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
+      />
     </>
   );
 }
