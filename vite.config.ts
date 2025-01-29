@@ -18,7 +18,7 @@ export default ({ mode }: ConfigEnv) => {
         },
       },
     },
-    base: "/react-main-2024-w4/",
+    base: "/react-main-2024-w5/",
     css: {
       postcss: {
         plugins: [tailwindcss, autoprefixer],
