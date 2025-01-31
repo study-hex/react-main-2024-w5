@@ -1,3 +1,6 @@
+import { useState, startTransition } from "react";
+import { mutate } from "swr";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,7 +13,10 @@ import { Plus, Minus } from "lucide-react";
 
 import { type Product } from "~/features/product";
 
+import { useToast } from "~/hooks/use-toast";
+
 import { useOneProduct } from "~/service/product/public";
+import { useCreateCart } from "~/service/cart";
 
 type ProductDetailDialogPropsType = {
   productId: string;
@@ -24,9 +30,48 @@ export default function ProductDetailDialog(
 ) {
   const { productId, open, handleOpenChange } = props;
 
+  const { toast } = useToast();
+
+  const [count, setCount] = useState<number>(1);
+
   const { data, isLoading } = useOneProduct({ id: productId });
+  const { trigger: triggerCart } = useCreateCart();
 
   const product = data?.product as Product;
+
+  const handleAddToCart = async () => {
+    const payload = {
+      data: {
+        product_id: productId,
+        qty: count,
+      },
+    };
+    try {
+      await triggerCart({ data: payload });
+
+      toast({
+        title: "更新成功",
+        variant: "default",
+      });
+
+      await mutate((key?: [string, ...unknown[]]) => {
+        if (key && Array.isArray(key)) {
+          return key[0].includes("/cart");
+        }
+      });
+
+      startTransition(() => {
+        handleOpenChange();
+      });
+    } catch (error) {
+      toast({
+        title: "更新失敗",
+        description:
+          error instanceof Error ? error.message : "更新過程發生錯誤",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -62,16 +107,24 @@ export default function ProductDetailDialog(
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCount(count - 1)}
+                  >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="w-12 text-center">1</span>
-                  <Button variant="outline" size="icon">
+                  <span className="w-12 text-center">{count}</span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCount(count + 1)}
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
 
-                <Button size="lg" className="w-full">
+                <Button size="lg" className="w-full" onClick={handleAddToCart}>
                   加入購物車
                 </Button>
               </div>
