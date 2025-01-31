@@ -12,8 +12,15 @@ type MutationParams<T> = {
   formData?: FormData;
 };
 
+type EndpointConfig = {
+  [key: string]: {
+    path: string;
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  };
+};
+
 type HooksType<T extends EndpointConfig> = {
-  [K in keyof T]: T[K] extends { method: 'GET' }
+  [K in keyof T]: T[K] extends { method: 'GET' | undefined }
   ? <TData extends Record<string, unknown> | undefined>(
     params?: GetParams,
     swrConfig?: SWRConfiguration
@@ -36,7 +43,26 @@ type MutationResult<TData> = {
   isMutating: boolean;
 };
 
-export const createApiHooks = <T extends EndpointConfig>(endpoints: T): HooksType<T> => {
+const replaceDynamicParams = (path: string, params?: GetParams) => {
+  if (!params) return { finalPath: path, queryParams: {} };
+
+  let finalPath = path;
+  const unusedParams: GetParams = { ...params };
+
+  Object.entries(params).forEach(([key, value]) => {
+    const placeholder = `:${key}`;
+    if (finalPath.includes(placeholder)) {
+      finalPath = finalPath.replace(placeholder, String(value));
+      delete unusedParams[key];
+    }
+  });
+
+  return { finalPath, queryParams: unusedParams };
+};
+
+export const createApiHooks = <T extends EndpointConfig>(
+  endpoints: T
+): HooksType<T> => {
   const result = {} as { [K in keyof T]: ReturnType<typeof createHook> };
 
   const createHook = <TData extends Record<string, unknown> | undefined>(
@@ -46,12 +72,16 @@ export const createApiHooks = <T extends EndpointConfig>(endpoints: T): HooksTyp
 
     if (method === 'GET') {
       return (params?: GetParams, swrConfig?: SWRConfiguration) => {
+        const { finalPath, queryParams } = replaceDynamicParams(path, params);
+
         return useSWR<APIResponse<TData>>(
-          params ? [path, params] : path,
+          Object.keys(queryParams || {}).length > 0
+            ? [finalPath, queryParams]
+            : finalPath,
           async (url) => {
             return fetcher(url, {
               method,
-              params: params,
+              params: queryParams,
             });
           },
           swrConfig
@@ -59,9 +89,7 @@ export const createApiHooks = <T extends EndpointConfig>(endpoints: T): HooksTyp
       };
     }
 
-    return (
-      config?: MutationParams<TData>
-    ) => {
+    return () => {
       const {
         trigger,
         data,
@@ -73,19 +101,19 @@ export const createApiHooks = <T extends EndpointConfig>(endpoints: T): HooksTyp
         Error,
         string,
         MutationParams<TData>
-      >(
-        path,
-        async (url: string, { arg }: { arg?: MutationParams<TData> }) =>
-          fetcher(url, {
-            method,
-            params: {
-              ...(config?.id ? { id: config.id } : {}),
-              ...arg?.params
-            },
-            data: arg?.data,
-            formData: arg?.formData,
-          }),
-      );
+      >(path, async (url: string, { arg }: { arg?: MutationParams<TData> }) => {
+        const { finalPath, queryParams } = replaceDynamicParams(url, arg?.id ? { id: arg.id } : undefined);
+
+        return fetcher(finalPath, {
+          method,
+          params: {
+            ...queryParams,
+            ...arg?.params,
+          },
+          data: arg?.data,
+          formData: arg?.formData,
+        });
+      });
 
       return {
         trigger: (arg?: MutationParams<TData>) =>
