@@ -35,7 +35,7 @@ export default function ProductDetailDialog(
   const [count, setCount] = useState<number>(1);
 
   const { data, isLoading } = useOneProduct({ id: productId });
-  const { trigger: triggerCart } = useCreateCart();
+  const { trigger: triggerCart, isMutating } = useCreateCart();
 
   const product = data?.product as Product;
 
@@ -124,7 +124,12 @@ export default function ProductDetailDialog(
                   </Button>
                 </div>
 
-                <Button size="lg" className="w-full" onClick={handleAddToCart}>
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={handleAddToCart}
+                  disabled={isMutating}
+                >
                   加入購物車
                 </Button>
               </div>

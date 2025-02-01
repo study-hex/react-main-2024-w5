@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Outlet } from "react-router";
 
 import { Button } from "@/components/ui/button";
@@ -19,16 +18,50 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 
-import { Plus, Minus, ShoppingCart, ChevronRight } from "lucide-react";
+import { ShoppingCart, ChevronRight } from "lucide-react";
+
+import { useToggle } from "@/hooks/useToggle";
+
+import { useCartList } from "@/service/cart";
+
+type CartListType = {
+  carts: {
+    id: string;
+    product: {
+      id: string;
+      title: string;
+      imageUrl: string;
+    };
+    qty: number;
+    final_total: number;
+  }[];
+  final_total: number;
+};
 
 export default function Layout() {
-  const [cartOpen, setCartOpen] = useState(false);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const {
+    open: cartOpen,
+    toggle: setCartToggle,
+    toggleClose: setCartOpenClose,
+  } = useToggle(false);
+  const {
+    open: checkoutOpen,
+    toggle: setCheckoutToggle,
+    toggleOpen: setCheckoutOpen,
+  } = useToggle(false);
+
+  const { data, isLoading } = useCartList();
+
+  const cartList = data?.data as CartListType;
 
   const handleCheckout = () => {
-    setCartOpen(false);
-    setCheckoutOpen(true);
+    setCartOpenClose();
+    setCheckoutOpen();
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -37,34 +70,42 @@ export default function Layout() {
         <div className="container flex h-16 mx-auto items-center justify-between">
           <h1 className="text-xl font-medium tracking-tight">Store</h1>
 
-          <Sheet open={cartOpen} onOpenChange={setCartOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-black text-xs text-white flex items-center justify-center">
-                  2
-                </span>
-              </Button>
-            </SheetTrigger>
+          {cartList && (
+            <Sheet open={cartOpen} onOpenChange={setCartToggle}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <ShoppingCart className="h-5 w-5" />
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-black text-xs text-white flex items-center justify-center">
+                    {cartList.carts?.length}
+                  </span>
+                </Button>
+              </SheetTrigger>
 
-            <SheetContent className="w-full sm:max-w-lg">
-              <SheetHeader>
-                <SheetTitle>購物車</SheetTitle>
-              </SheetHeader>
-              <div className="mt-8 space-y-8">
-                {[1, 2].map((item) => (
-                  <div key={item} className="flex gap-4">
-                    <div className="h-24 w-24 bg-gray-100 rounded-lg overflow-hidden">
-                      <img
-                        src="/api/placeholder/200/200"
-                        alt="Product"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <h3 className="font-medium">商品名稱</h3>
-                      <p className="text-sm text-gray-500">NT$ 1,999</p>
-                      <div className="flex items-center gap-2">
+              <SheetContent className="w-full sm:max-w-lg">
+                <SheetHeader>
+                  <SheetTitle>購物車</SheetTitle>
+                </SheetHeader>
+                <div className="mt-8 space-y-8">
+                  {cartList.carts.map((item) => (
+                    <div key={item.id} className="flex gap-4">
+                      <div className="h-24 w-24 bg-gray-100 rounded-lg overflow-hidden">
+                        <img
+                          src={item.product.imageUrl}
+                          alt={item.product.title}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <h3 className="font-medium">{item.product.title}</h3>
+                        <p className="text-sm text-gray-500">
+                          NT$
+                          {new Intl.NumberFormat().format(item.final_total)}
+                        </p>
+                        <p>
+                          數量：
+                          {item.qty}
+                        </p>
+                        {/* <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
                           size="icon"
@@ -80,24 +121,32 @@ export default function Layout() {
                         >
                           <Plus className="h-3 w-3" />
                         </Button>
+                      </div> */}
                       </div>
                     </div>
+                  ))}
+                  <Separator />
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-lg">
+                      <span>總計</span>
+                      <span className="font-medium">
+                        NT$
+                        {new Intl.NumberFormat().format(cartList.final_total)}
+                      </span>
+                    </div>
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      onClick={handleCheckout}
+                    >
+                      結帳
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
                   </div>
-                ))}
-                <Separator />
-                <div className="space-y-4">
-                  <div className="flex justify-between text-lg">
-                    <span>總計</span>
-                    <span className="font-medium">NT$ 3,998</span>
-                  </div>
-                  <Button className="w-full" size="lg" onClick={handleCheckout}>
-                    結帳
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
                 </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          )}
         </div>
       </header>
 
@@ -106,7 +155,7 @@ export default function Layout() {
       </main>
 
       {/* Checkout Dialog */}
-      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+      <Dialog open={checkoutOpen} onOpenChange={setCheckoutToggle}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>結帳資訊</DialogTitle>
