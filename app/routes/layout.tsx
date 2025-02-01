@@ -135,6 +135,7 @@ export default function Layout() {
                       className="w-full"
                       size="lg"
                       onClick={handleCheckout}
+                      disabled={cartList.carts.length === 0}
                     >
                       結帳
                       <ChevronRight className="ml-2 h-4 w-4" />
