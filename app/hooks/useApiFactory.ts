@@ -19,13 +19,19 @@ type EndpointConfig = {
   };
 };
 
+type DefaultResponseData = Record<string, unknown>;
+
 type HooksType<T extends EndpointConfig> = {
   [K in keyof T]: T[K] extends { method: 'GET' | undefined }
-  ? <TData extends Record<string, unknown> | undefined>(
+  ? <TData extends DefaultResponseData = DefaultResponseData>(
     params?: GetParams,
     swrConfig?: SWRConfiguration
   ) => SWRResponse<APIResponse<TData>>
-  : <TData extends Record<string, unknown> | undefined>(
+  : T[K] extends { method: 'DELETE' }
+  ? <TData extends DefaultResponseData = DefaultResponseData>(
+    config?: Omit<MutationParams<TData>, 'data' | 'formData'>
+  ) => MutationResult<TData>
+  : <TData extends DefaultResponseData = DefaultResponseData>(
     config?: MutationParams<TData>
   ) => MutationResult<TData>;
 };
@@ -41,6 +47,14 @@ type MutationResult<TData> = {
   error: Error | undefined;
   reset: () => void;
   isMutating: boolean;
+};
+
+type RequestConfig<T extends DefaultResponseData> = {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  params?: GetParams;
+  data?: T;
+  formData?: FormData;
+  headers?: Record<string, string>;
 };
 
 const replaceDynamicParams = (path: string, params?: GetParams) => {
@@ -65,9 +79,7 @@ export const createApiHooks = <T extends EndpointConfig>(
 ): HooksType<T> => {
   const result = {} as { [K in keyof T]: ReturnType<typeof createHook> };
 
-  const createHook = <TData extends Record<string, unknown> | undefined>(
-    endpoint: keyof T
-  ) => {
+  const createHook = <TData extends DefaultResponseData>(endpoint: keyof T) => {
     const { path, method = 'GET' } = endpoints[endpoint as string];
 
     if (method === 'GET') {
@@ -79,7 +91,7 @@ export const createApiHooks = <T extends EndpointConfig>(
             ? [finalPath, queryParams]
             : finalPath,
           async (url) => {
-            return fetcher(url, {
+            return fetcher<TData>(url, {
               method,
               params: queryParams,
             });
@@ -89,7 +101,7 @@ export const createApiHooks = <T extends EndpointConfig>(
       };
     }
 
-    return () => {
+    return (initialConfig?: MutationParams<TData>) => {
       const {
         trigger,
         data,
@@ -102,29 +114,48 @@ export const createApiHooks = <T extends EndpointConfig>(
         string,
         MutationParams<TData>
       >(path, async (url: string, { arg }: { arg?: MutationParams<TData> }) => {
-        const { finalPath, queryParams } = replaceDynamicParams(url, arg?.id ? { id: arg.id } : undefined);
+        const mergedConfig = {
+          ...initialConfig,
+          ...arg,
+        };
 
-        return fetcher(finalPath, {
+        const { finalPath, queryParams } = replaceDynamicParams(
+          url,
+          mergedConfig?.id ? { id: mergedConfig.id } : undefined
+        );
+
+        const config: RequestConfig<TData> = {
           method,
           params: {
             ...queryParams,
-            ...arg?.params,
+            ...mergedConfig?.params,
           },
-          data: arg?.data,
-          formData: arg?.formData,
-        });
+        };
+
+        if (method !== 'DELETE') {
+          if (mergedConfig?.data !== undefined && mergedConfig?.data !== null) {
+            config.data = mergedConfig.data;
+          }
+          if (mergedConfig?.formData !== undefined) {
+            config.formData = mergedConfig.formData;
+          }
+        }
+
+        return fetcher<TData>(finalPath, config);
       });
 
       return {
         trigger: (arg?: MutationParams<TData>) =>
-          trigger(arg ?? { params: {}, data: undefined, formData: undefined }),
+          trigger({
+            ...initialConfig,
+            ...arg,
+          }),
         mutateAsync: (mutationConfig?: MutationParams<TData>) => {
-          const defaultConfig: MutationParams<TData> = {
-            params: {},
-            data: undefined,
-            formData: undefined,
+          const mergedConfig = {
+            ...initialConfig,
+            ...mutationConfig,
           };
-          return trigger(mutationConfig ?? defaultConfig);
+          return trigger(mergedConfig);
         },
         data,
         error,
