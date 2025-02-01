@@ -1,17 +1,11 @@
 import { Outlet } from "react-router";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -23,6 +17,8 @@ import { ShoppingCart, ChevronRight } from "lucide-react";
 import { useToggle } from "@/hooks/useToggle";
 
 import { useCartList } from "@/service/cart";
+
+import CheckoutFormDialog from "@/features/public/components/CheckoutFormDialog";
 
 type CartListType = {
   carts: {
@@ -72,6 +68,7 @@ export default function Layout() {
 
           {cartList && (
             <Sheet open={cartOpen} onOpenChange={setCartToggle}>
+              <SheetDescription />
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
                   <ShoppingCart className="h-5 w-5" />
@@ -154,65 +151,10 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      {/* Checkout Dialog */}
-      <Dialog open={checkoutOpen} onOpenChange={setCheckoutToggle}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>結帳資訊</DialogTitle>
-          </DialogHeader>
-          <form className="mt-6 space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="請輸入 Email"
-                className="h-12"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
-                收件人姓名
-              </label>
-              <Input id="name" placeholder="請輸入姓名" className="h-12" />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="tel" className="text-sm font-medium">
-                收件人電話
-              </label>
-              <Input id="tel" placeholder="請輸入電話" className="h-12" />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="address" className="text-sm font-medium">
-                收件人地址
-              </label>
-              <Input id="address" placeholder="請輸入地址" className="h-12" />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="message" className="text-sm font-medium">
-                訂單備註
-              </label>
-              <Textarea
-                id="message"
-                placeholder="有什麼想告訴我們的..."
-                className="min-h-[120px]"
-              />
-            </div>
-
-            <div className="pt-4">
-              <Button type="submit" className="w-full h-12 text-base">
-                完成訂購
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <CheckoutFormDialog
+        checkoutOpen={checkoutOpen}
+        handleOpenChange={setCheckoutToggle}
+      />
     </div>
   );
 }
