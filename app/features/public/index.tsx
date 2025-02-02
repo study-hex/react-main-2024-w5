@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import LinearProgress from "~/components/LinearProgress";
+
 import { useProductsAll } from "~/service/product/public";
 
 import { type ProductsType, type Product } from "~/features/product";
@@ -15,7 +17,7 @@ export default function Public() {
     : [];
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LinearProgress variant="indeterminate" />;
   }
 
   return (

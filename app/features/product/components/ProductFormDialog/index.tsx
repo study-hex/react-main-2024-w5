@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { PencilIcon, PackageSearch, PlusCircle } from "lucide-react";
 
+import LinearProgress from "@/components/LinearProgress";
 import FormSection from "@/components/FormSection";
 
 import { useToast } from "@/hooks/use-toast";
@@ -118,7 +119,7 @@ export default function ProductFormDialog(props: ProductFormDialogPropsType) {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LinearProgress variant="indeterminate" />;
   }
 
   return (

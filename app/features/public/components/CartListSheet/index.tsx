@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { ShoppingCart, ChevronRight, Trash2, X } from "lucide-react";
 
+import LinearProgress from "@/components/LinearProgress";
 import { useToast } from "@/hooks/use-toast";
 
 import {
@@ -120,7 +121,7 @@ export default function CartListSheet(props: CartListSheetPropsType) {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LinearProgress variant="indeterminate" />;
   }
 
   return (

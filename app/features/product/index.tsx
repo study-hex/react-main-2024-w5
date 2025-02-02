@@ -3,6 +3,8 @@ import { useState } from "react";
 import ProductList from "./components/ProductList";
 import ProductContent from "./components/ProductContent";
 
+import LinearProgress from "~/components/LinearProgress";
+
 import { useProductsAll } from "~/service/product";
 
 export type Product = {
@@ -41,7 +43,7 @@ export default function Product() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LinearProgress variant="indeterminate" />;
   }
 
   return (

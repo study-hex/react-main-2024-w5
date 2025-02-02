@@ -13,6 +13,8 @@ import { Plus, Minus } from "lucide-react";
 
 import { type Product } from "~/features/product";
 
+import LinearProgress from "~/components/LinearProgress";
+
 import { useToast } from "~/hooks/use-toast";
 
 import { useOneProduct } from "~/service/product/public";
@@ -74,7 +76,7 @@ export default function ProductDetailDialog(
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LinearProgress variant="indeterminate" />;
   }
 
   return (
