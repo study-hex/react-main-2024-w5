@@ -29,10 +29,14 @@ export default function ProductFormImage() {
           control={control}
           render={({ field }) => (
             <div className="space-y-2">
-              <Label className="text-lg font-medium text-amber-800">
+              <Label
+                htmlFor="imageUrl"
+                className="text-lg font-medium text-amber-800"
+              >
                 主要圖片
               </Label>
               <Input
+                id="imageUrl"
                 placeholder="輸入圖片網址"
                 className="border-amber-200 focus:border-amber-400"
                 {...field}

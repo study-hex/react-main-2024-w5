@@ -17,10 +17,11 @@ export default function ProductFormBasic() {
         control={control}
         render={({ field }) => (
           <div className="space-y-2">
-            <Label className="text-amber-800">
+            <Label htmlFor="title" className="text-amber-800">
               產品名稱 <span className="text-red-500">*</span>
             </Label>
             <Input
+              id="title"
               placeholder="輸入產品名稱"
               className="border-amber-200 focus:border-amber-400"
               {...field}
@@ -40,10 +41,11 @@ export default function ProductFormBasic() {
         control={control}
         render={({ field }) => (
           <div className="space-y-2">
-            <Label className="text-amber-800">
+            <Label htmlFor="category" className="text-amber-800">
               產品分類 <span className="text-red-500">*</span>
             </Label>
             <Input
+              id="category"
               placeholder="選擇產品分類"
               className="border-amber-200 focus:border-amber-400"
               {...field}

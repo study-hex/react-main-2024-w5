@@ -17,8 +17,11 @@ export default function ProductFormDescription() {
         control={control}
         render={({ field }) => (
           <div className="space-y-2">
-            <Label className="text-amber-800">簡短描述</Label>
+            <Label htmlFor="description" className="text-amber-800">
+              簡短描述
+            </Label>
             <Input
+              id="description"
               placeholder="輸入簡短的產品描述"
               className="border-amber-200 focus:border-amber-400"
               {...field}
@@ -38,8 +41,11 @@ export default function ProductFormDescription() {
         control={control}
         render={({ field }) => (
           <div className="space-y-2">
-            <Label className="text-amber-800">詳細內容</Label>
+            <Label htmlFor="content" className="text-amber-800">
+              詳細內容
+            </Label>
             <Input
+              id="content"
               placeholder="輸入詳細的產品說明"
               className="border-amber-200 focus:border-amber-400"
               {...field}
@@ -59,8 +65,11 @@ export default function ProductFormDescription() {
         control={control}
         render={({ field }) => (
           <div className="space-y-2">
-            <Label className="text-amber-800">備註</Label>
+            <Label htmlFor="notes" className="text-amber-800">
+              備註
+            </Label>
             <Input
+              id="notes"
               placeholder="輸入備註"
               className="border-amber-200 focus:border-amber-400"
               {...field}
